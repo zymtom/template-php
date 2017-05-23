@@ -27,6 +27,7 @@ class restAPI {
     public function getPath(){
         global $site;
         if(!array_key_exists(substr($_SERVER['REQUEST_URI'], strlen($this->basepath)-1), $this->routes)){
+            header("HTTP/1.1 500 Internal Server Error");
             return array(false, array('No matching route'));
         }
 
