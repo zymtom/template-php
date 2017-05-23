@@ -4,12 +4,15 @@ class restAPI {
     private $routes = array();
     public function __construct($basepath, $routes){
         if(strpos($_SERVER['REQUEST_URI'], $basepath) !== 0){
+            header("HTTP/1.1 500 Internal Server Error");
             die('bad basepath');
         }
         if(!is_array($routes)){
+            header("HTTP/1.1 500 Internal Server Error");
             die('bad route');
         }
         if(!(count($routes) > 0)){
+            header("HTTP/1.1 500 Internal Server Error");
             die('no route');
         }
 
@@ -17,6 +20,7 @@ class restAPI {
         $this->basepath = $basepath;
         $ret = $this->registerRoutes($routes);
         if(!$ret[0]){
+            header("HTTP/1.1 500 Internal Server Error");
             die(json_encode($ret[1]));
         }
     }
@@ -25,7 +29,12 @@ class restAPI {
         if(!array_key_exists(substr($_SERVER['REQUEST_URI'], strlen($this->basepath)-1), $this->routes)){
             return array(false, array('No matching route'));
         }
-        return $site->{$this->routes[substr($_SERVER['REQUEST_URI'], strlen($this->basepath)-1)]['function']}();
+
+        $res = $site->{$this->routes[substr($_SERVER['REQUEST_URI'], strlen($this->basepath)-1)]['function']}();
+        if(!$res[0]){
+            header("HTTP/1.1 500 Internal Server Error");
+        }
+        return $res;
     }
     private function registerRoutes($routes){
         foreach($routes as $key => $val){
