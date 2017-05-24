@@ -158,9 +158,6 @@ class DB{
       }
     }
     public function execSelectSingle($query, $preparray){
-    //var_dump($query);
-    //var_dump($preparray);
-    //var_dump($this->genFakeQuery($query, $preparray));
       try {
           $stmt = $this->db->prepare($query);
           if($stmt === false){
@@ -176,10 +173,34 @@ class DB{
           }else{
               return array('type' => 'noreturn', 'return' => 'none');
           }
-          //echo $query;
       } catch(PDOException $ex) {
           return array('type' => 'error', 'return' => $ex);
       }
+    }
+    public function beginTransaction(){
+        $trans = $this->db->beginTransaction();
+        $this->transactionStarted = $trans;
+        return $trans;
+    }
+    public function rollback(){
+        if($this->transactionStarted){
+            $trans = $this->db->rollBack();
+            if($trans){
+                $this->transactionStarted = false;
+            }
+            return $trans;
+        }
+        return false;
+    }
+    public function commit(){
+        if($this->transactionStarted){
+            $trans = $this->db->commit();
+            if($trans){
+                $this->transactionStarted = false;
+            }
+            return $trans;
+        }
+        return false;
     }
     public function genFakeQuery($query, $array, $limit = 0, $offset = 0){
       foreach($array as $key => $val){
